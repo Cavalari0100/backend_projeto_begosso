@@ -8,7 +8,8 @@ const cors = require('cors');
 const app = express();
 //Models
 const Funcionario = require('./models/Funcionario')
-const PostagemIberia = require('./models/PostagemIberia')
+const PostagemIberia = require('./models/PostagemIberia');
+const PostagemTelemetria = require('./models/PostagemTelemetria');
 
 //CONFIG JSON response
 app.use(express.json())
@@ -199,7 +200,7 @@ app.post("/postagemiberia/novapostagem", checkToken, async (req, res) => {
 app.put('/postagemiberia/alterarpostagemiberia/:id', async (req, res) => {
     const id = req.params.id
     const { titulo, conteudo, autor } = req.body
-    const postagemiberia = {
+    const postagemtelemetria = {
         titulo,
         conteudo,
         autor
@@ -217,13 +218,13 @@ app.put('/postagemiberia/alterarpostagemiberia/:id', async (req, res) => {
             return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
         }
 
-        const updatePostagem = await PostagemIberia.updateOne({ _id: id }, postagemiberia)
+        const updatePostagem = await PostagemIberia.updateOne({ _id: id }, postagemtelemetria)
 
         if (updatePostagem.matchedCount === 0) {
             return res.status(422).json({ Description_Err: 'ops algo deu errado!!' })
         }
 
-        res.status(200).json(postagemiberia)
+        res.status(200).json(postagemtelemetria)
 
     } catch (error) {
         console.log(error)
@@ -240,8 +241,8 @@ app.delete('/postagemiberia/deletarpostagem/:id', async (req, res) => {
         return res.status(422).json({ Description_Err: 'Ops parece que esta postagem não existe!!' })
     }
     try {
-        await PostagemIberia.deleteOne({_id:id})
-        res.status(200).json({Description_done:"Postagem Deletada com sucesso!!"})
+        await PostagemIberia.deleteOne({ _id: id })
+        res.status(200).json({ Description_done: "Postagem Deletada com sucesso!!" })
     } catch (error) {
         console.log(error)
         return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
@@ -249,27 +250,132 @@ app.delete('/postagemiberia/deletarpostagem/:id', async (req, res) => {
 
 })
 
-
-
-
-
 //Buscando postagem da iberia por ID
 app.get("/postagemiberia/noticiaiberia/:id", async (req, res) => {
 
     const id = req.params.id
 
     //check user exist
-    const postagemiberia = await PostagemIberia.findById(id)
+    const postagemtelemetria = await PostagemIberia.findById(id)
 
-    if (!postagemiberia) {
+    if (!postagemtelemetria) {
         return res.status(422).json({ Description_Err: 'Postagem iberia não encontrada' })
     }
-    return res.status(200).json({ postagemiberia })
+    return res.status(200).json({ postagemtelemetria })
 
 })
 
 //---------------------------------------------------END POSTAGEMIBERIA-------------------------------------------
+//--------------------------------------FUNCTIONS END ROUTES FOR POSTAGEM TELEMETRIA----------------------------------
+//rota begin
+app.get("/postagemtelemetria", async (req, res) => {
+    const postagemtelemetria = await PostagemTelemetria.find()
+    return res.status(200).json({ postagemtelemetria })
+})
+//CREATE POSTAGEM DA TELEMETRIA
+app.post("/postagemtelemetria/novapostagem", checkToken, async (req, res) => {
+    const { titulo, conteudo, autor } = req.body
+    //Validação de campos
+    if (!titulo) {
+        return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+    }
 
+    if (!conteudo) {
+        return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+    }
+
+    if (!autor) {
+        return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+    }
+
+    //Validação se postagem já é existente
+    const postagemExist = await PostagemTelemetria.findOne({ titulo: titulo })
+    if (postagemExist) {
+        return res.status(422).json({ Description_Err: 'O titulo ja esta sendo usado em outra postagem...' })
+    }
+
+    const postagemTelemetria = new PostagemTelemetria({
+        titulo,
+        conteudo,
+        autor
+    })
+
+    try {
+        await postagemTelemetria.save()
+        return res.status(200).json({ msg: "Postagem da iberia realizada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//UPDATE POSTAGEM DA TELEMETRIA
+app.put('/postagemtelemetria/telemetria/:id', async (req, res) => {
+    const id = req.params.id
+    const { titulo, conteudo, autor } = req.body
+    const postagemtelemetria = {
+        titulo,
+        conteudo,
+        autor
+    }
+    try {
+        if (!titulo) {
+            return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+        }
+
+        if (!conteudo) {
+            return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+        }
+
+        if (!autor) {
+            return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+        }
+
+        const updatePostagem = await PostagemTelemetria.updateOne({ _id: id }, postagemtelemetria)
+        if (updatePostagem.matchedCount === 0) {
+            return res.status(422).json({ Description_Err: 'ops algo deu errado!!' })
+        }
+
+        res.status(200).json(postagemtelemetria)
+
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+})
+//DELETE POSTAGEM DA TELEMETRIA
+app.delete('/postagemtelemetria/deletarpostagem/:id', async (req, res) => {
+
+    const id = req.params.id
+    const postagem = await PostagemTelemetria.findOne({ _id: id })
+
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Ops parece que esta postagem não existe!!' })
+    }
+    try {
+        await PostagemTelemetria.deleteOne({ _id: id })
+        res.status(200).json({ Description_done: "Postagem Deletada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//Buscando postagem da TELEMETRIA por ID
+app.get("/postagemtelemetria/noticiatelemetria/:id", async (req, res) => {
+
+    const id = req.params.id
+
+    //check user exist
+    const postagemtelemetria = await PostagemTelemetria.findById(id)
+
+    if (!postagemtelemetria) {
+        return res.status(422).json({ Description_Err: 'Postagem da telemetria não encontrada' })
+    }
+    return res.status(200).json({ postagemtelemetria })
+
+})
+//---------------------------------------------------END POSTAGEMTELEMETRIA-------------------------------------------
 //CREDENTIAL MONGO
 const dbUser = process.env.DB_USER
 const dbPassword = process.env.DB_PASS
