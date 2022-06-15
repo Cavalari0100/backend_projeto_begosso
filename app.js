@@ -10,6 +10,7 @@ const app = express();
 const Funcionario = require('./models/Funcionario')
 const PostagemIberia = require('./models/PostagemIberia');
 const PostagemTelemetria = require('./models/PostagemTelemetria');
+const PostagemPcts = require('./models/PostagemPcts');
 
 //CONFIG JSON response
 app.use(express.json())
@@ -178,7 +179,7 @@ app.post("/postagemiberia/novapostagem", checkToken, async (req, res) => {
     //Validação se postagem já é existente
     const postagemExist = await PostagemIberia.findOne({ titulo: titulo })
     if (postagemExist) {
-        return res.status(422).json({ Description_Err: 'O titulo ja esta sendo usado em outra postagem...' })
+        return res.status(422).json({ Description_Err: 'Esta postagem ja existe...' })
     }
 
     const postagemIberia = new PostagemIberia({
@@ -291,7 +292,7 @@ app.post("/postagemtelemetria/novapostagem", checkToken, async (req, res) => {
     //Validação se postagem já é existente
     const postagemExist = await PostagemTelemetria.findOne({ titulo: titulo })
     if (postagemExist) {
-        return res.status(422).json({ Description_Err: 'O titulo ja esta sendo usado em outra postagem...' })
+        return res.status(422).json({ Description_Err: 'Esta postagem ja existe...' })
     }
 
     const postagemTelemetria = new PostagemTelemetria({
@@ -376,6 +377,116 @@ app.get("/postagemtelemetria/noticiatelemetria/:id", async (req, res) => {
 
 })
 //---------------------------------------------------END POSTAGEMTELEMETRIA-------------------------------------------
+//--------------------------------------FUNCTIONS END ROUTES FOR POSTAGEM PCTS----------------------------------------
+//rota begin
+app.get("/postagempcts", async (req, res) => {
+    const postagemPcts = await PostagemPcts.find()
+    return res.status(200).json({postagemPcts})
+})
+//CREATE POSTAGEM DA TELEMETRIA
+app.post("/postagempcts/novapostagem", checkToken, async (req, res) => {
+    const { titulo, conteudo, autor } = req.body
+    //Validação de campos
+    if (!titulo) {
+        return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+    }
+
+    if (!conteudo) {
+        return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+    }
+
+    if (!autor) {
+        return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+    }
+
+    //Validação se postagem já é existente
+    const postagemExist = await PostagemPcts.findOne({ titulo: titulo })
+    if (postagemExist) {
+        return res.status(422).json({ Description_Err: 'Esta postagem ja existe...' })
+    }
+
+    const postagemPcts = new PostagemPcts({
+        titulo,
+        conteudo,
+        autor
+    })
+
+    try {
+        await postagemPcts.save()
+        return res.status(200).json({ msg: "Postagem da pcts realizada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//UPDATE POSTAGEM DA TELEMETRIA
+app.put('/postagempcts/pcts/:id', async (req, res) => {
+    const id = req.params.id
+    const { titulo, conteudo, autor } = req.body
+    const postagemPcts = {
+        titulo,
+        conteudo,
+        autor
+    }
+    try {
+        if (!titulo) {
+            return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+        }
+
+        if (!conteudo) {
+            return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+        }
+
+        if (!autor) {
+            return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+        }
+
+        const updatePostagem = await PostagemTelemetria.updateOne({ _id: id }, postagemPcts)
+        if (updatePostagem.matchedCount === 0) {
+            return res.status(422).json({ Description_Err: 'ops algo deu errado!!' })
+        }
+
+        res.status(200).json(postagemPcts)
+
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+})
+//DELETE POSTAGEM DA TELEMETRIA
+app.delete('/postagempcts/deletarpostagem/:id', async (req, res) => {
+
+    const id = req.params.id
+    const postagem = await PostagemPcts.findOne({ _id: id })
+
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Ops parece que esta postagem não existe!!' })
+    }
+    try {
+        await PostagemPcts.deleteOne({ _id: id })
+        res.status(200).json({ Description_done: "Postagem Deletada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//Buscando postagem da TELEMETRIA por ID
+app.get("/postagempcts/noticiapcts/:id", async (req, res) => {
+
+    const id = req.params.id
+
+    //check user exist
+    const postagempcts = await PostagemPcts.findById(id)
+
+    if (!postagemtelemetria) {
+        return res.status(422).json({ Description_Err: 'Postagem da telemetria não encontrada' })
+    }
+    return res.status(200).json({ postagempcts })
+
+})
+//---------------------------------------------------END POSTAGEM PCTS-------------------------------------------
 //CREDENTIAL MONGO
 const dbUser = process.env.DB_USER
 const dbPassword = process.env.DB_PASS

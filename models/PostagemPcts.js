@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 
-const PostagemTelemetria = mongoose.model('PostagemTelemetria', {
+const PostagemPcts = mongoose.model('PostagemPcts', {
     titulo: String,
     conteudo: String,
     autor: String
 })
-module.exports = PostagemTelemetria
+module.exports = PostagemPcts
