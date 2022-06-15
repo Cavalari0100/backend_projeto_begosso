@@ -103,11 +103,11 @@ app.post('/auth/register', async (req, res) => {
         await funcionario.save()
         console.log(funcionario)
         return res.status(200).json({ msg: 'Cadastro realizado' })
-          
+
     } catch (error) {
-    console.log(error)
-    return res.status(500).json({ msg: 'error no servidor' })
-}
+        console.log(error)
+        return res.status(500).json({ msg: 'error no servidor' })
+    }
 })
 //Login Funcionario
 app.post("/auth/login", async (req, res) => {
@@ -154,8 +154,9 @@ app.post("/auth/login", async (req, res) => {
 //---------------------------------------------------END FUNCIONARIOS-------------------------------------------
 //FUNCTIONS END ROUTES FOR POSTAGEMIBERIA
 //rota begin
-app.get("/postagemiberia", (req, res) => {
-    return res.status(200).json({ msg: "Ola mundo Iberia" })
+app.get("/postagemiberia", async (req, res) => {
+    const postagens = await PostagemIberia.find()
+    return res.status(200).json({ postagens })
 })
 //CREATE POSTAGEM
 app.post("/postagemiberia/novapostagem", checkToken, async (req, res) => {
@@ -194,6 +195,64 @@ app.post("/postagemiberia/novapostagem", checkToken, async (req, res) => {
     }
 
 })
+//UPDATE POSTAGEM DA IBERIA
+app.put('/postagemiberia/alterarpostagemiberia/:id', async (req, res) => {
+    const id = req.params.id
+    const { titulo, conteudo, autor } = req.body
+    const postagemiberia = {
+        titulo,
+        conteudo,
+        autor
+    }
+    try {
+        if (!titulo) {
+            return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+        }
+
+        if (!conteudo) {
+            return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+        }
+
+        if (!autor) {
+            return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+        }
+
+        const updatePostagem = await PostagemIberia.updateOne({ _id: id }, postagemiberia)
+
+        if (updatePostagem.matchedCount === 0) {
+            return res.status(422).json({ Description_Err: 'ops algo deu errado!!' })
+        }
+
+        res.status(200).json(postagemiberia)
+
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+})
+//DELETE POSTAGEM DA IBERIA
+app.delete('/postagemiberia/deletarpostagem/:id', async (req, res) => {
+
+    const id = req.params.id
+    const postagem = await PostagemIberia.findOne({ _id: id })
+
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Ops parece que esta postagem não existe!!' })
+    }
+    try {
+        await PostagemIberia.deleteOne({_id:id})
+        res.status(200).json({Description_done:"Postagem Deletada com sucesso!!"})
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+
+
+
+
+
 //Buscando postagem da iberia por ID
 app.get("/postagemiberia/noticiaiberia/:id", async (req, res) => {
 
