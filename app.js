@@ -21,17 +21,16 @@ app.use(express.json())
 
 //Configurando o Cors
 
-app.use((req, res, next) => {
-    //console.log("acessou o medle")
-    res.header("Access-Control-Allow-Origin", "*")
-    res.header("Access-Control-Allow-Methods", 'GET,POST,PUT,DELETE')
-
-    app.use(cors());
-    next()
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE,PATCH");
+    next();
 });
 
 //FUNCTIONS END ROUTES FOR FUNCIONARIOS
 //public rout
+
 app.get('/', (req, res) => {
     return res.status(200).json({ msg: "Ola,mundo" })
 })
@@ -157,14 +156,14 @@ app.post("/auth/login", async (req, res) => {
 })
 
 //---------------------------------------------------END FUNCIONARIOS-------------------------------------------
-//FUNCTIONS END ROUTES FOR POSTAGEMIBERIA
+//-------------------------------------FUNCTIONS END ROUTES FOR POSTAGEMIBERIA----------------------------------
 //rota begin
 app.get("/postagemiberia", async (req, res) => {
-    const postagens = await PostagemIberia.find()
-    return res.status(200).json({ postagens })
+    const postagens = await PostagemIberia.find();
+    return res.status(200).json(postagens)
 })
 //CREATE POSTAGEM
-app.post("/postagemiberia/novapostagem", checkToken, async (req, res) => {
+app.post("/postagemiberia/novapostagem", async (req, res) => {
     const { titulo, conteudo, autor } = req.body
     //Validação de campos
     if (!titulo) {
@@ -260,12 +259,27 @@ app.get("/postagemiberia/noticiaiberia/:id", async (req, res) => {
     const id = req.params.id
 
     //check user exist
-    const postagemtelemetria = await PostagemIberia.findById(id)
+    const postagem = await PostagemIberia.findById(id)
 
-    if (!postagemtelemetria) {
+    if (!postagem) {
         return res.status(422).json({ Description_Err: 'Postagem iberia não encontrada' })
     }
-    return res.status(200).json({ postagemtelemetria })
+    const postagemiberia = await PostagemIberia.findById({ _id: Object(id) }).then(data => {
+        return (
+            {
+                success: true,
+                titulo: data.titulo,
+                conteudo: data.conteudo,
+                autor: data.autor
+            }
+        )
+    }).catch(err=>{
+        return({
+            success:false,
+            data:err
+        })
+    });
+    return res.status(200).send(postagemiberia)
 
 })
 
@@ -273,11 +287,11 @@ app.get("/postagemiberia/noticiaiberia/:id", async (req, res) => {
 //--------------------------------------FUNCTIONS END ROUTES FOR POSTAGEM TELEMETRIA----------------------------------
 //rota begin
 app.get("/postagemtelemetria", async (req, res) => {
-    const postagemtelemetria = await PostagemTelemetria.find()
-    return res.status(200).json({ postagemtelemetria })
+    const postagens = await PostagemTelemetria.find();
+    return res.status(200).json(postagens)
 })
 //CREATE POSTAGEM DA TELEMETRIA
-app.post("/postagemtelemetria/novapostagem", checkToken, async (req, res) => {
+app.post("/postagemtelemetria/novapostagem", async (req, res) => {
     const { titulo, conteudo, autor } = req.body
     //Validação de campos
     if (!titulo) {
@@ -371,23 +385,38 @@ app.get("/postagemtelemetria/noticiatelemetria/:id", async (req, res) => {
     const id = req.params.id
 
     //check user exist
-    const postagemtelemetria = await PostagemTelemetria.findById(id)
+    const postagem = await PostagemTelemetria.findById(id)
 
-    if (!postagemtelemetria) {
-        return res.status(422).json({ Description_Err: 'Postagem da telemetria não encontrada' })
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Postagem iberia não encontrada' })
     }
-    return res.status(200).json({ postagemtelemetria })
+    const postagemtelemetria = await PostagemTelemetria.findById({ _id: Object(id) }).then(data => {
+        return (
+            {
+                success: true,
+                titulo: data.titulo,
+                conteudo: data.conteudo,
+                autor: data.autor
+            }
+        )
+    }).catch(err=>{
+        return({
+            success:false,
+            data:err
+        })
+    });
+    return res.status(200).send(postagemtelemetria)
 
 })
 //---------------------------------------------------END POSTAGEMTELEMETRIA-------------------------------------------
 //--------------------------------------FUNCTIONS END ROUTES FOR POSTAGEM PCTS----------------------------------------
 //rota begin
 app.get("/postagempcts", async (req, res) => {
-    const postagemPcts = await PostagemPcts.find()
-    return res.status(200).json({postagemPcts})
+    const postagens = await PostagemPcts.find();
+    return res.status(200).json(postagens)
 })
 //CREATE POSTAGEM DA PCTS
-app.post("/postagempcts/novapostagem", checkToken, async (req, res) => {
+app.post("/postagempcts/novapostagem", async (req, res) => {
     const { titulo, conteudo, autor } = req.body
     //Validação de campos
     if (!titulo) {
@@ -481,23 +510,39 @@ app.get("/postagempcts/noticiapcts/:id", async (req, res) => {
     const id = req.params.id
 
     //check user exist
-    const postagempcts = await PostagemPcts.findById(id)
+    const postagem = await PostagemPcts.findById(id)
 
-    if (!postagemtelemetria) {
-        return res.status(422).json({ Description_Err: 'Postagem da telemetria não encontrada' })
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Postagem iberia não encontrada' })
     }
-    return res.status(200).json({ postagempcts })
+    const postagempcts = await PostagemPcts.findById({ _id: Object(id) }).then(data => {
+        return (
+            {
+                success: true,
+                titulo: data.titulo,
+                conteudo: data.conteudo,
+                autor: data.autor
+            }
+        )
+    }).catch(err=>{
+        return({
+            success:false,
+            data:err
+        })
+    });
+    return res.status(200).send(postagempcts)
+
 
 })
 //---------------------------------------------------END POSTAGEM PCTS-------------------------------------------
 //--------------------------------------FUNCTIONS END ROUTES FOR POSTAGEM TI----------------------------------------
 //rota begin
 app.get("/postagemti", async (req, res) => {
-    const PostagemTi = await PostagemTi.find()
-    return res.status(200).json({PostagemTi})
+    const postagemTi = await PostagemTi.find()
+    return res.status(200).json( postagemTi )
 })
 //CREATE POSTAGEM DA PCTS
-app.post("/postagemti/novapostagem", checkToken, async (req, res) => {
+app.post("/postagemti/novapostagem", async (req, res) => {
     const { titulo, conteudo, autor } = req.body
     //Validação de campos
     if (!titulo) {
@@ -537,7 +582,7 @@ app.post("/postagemti/novapostagem", checkToken, async (req, res) => {
 app.put('/postagemti/ti/:id', async (req, res) => {
     const id = req.params.id
     const { titulo, conteudo, autor } = req.body
-    const postagemti = {
+    const postagemTi = {
         titulo,
         conteudo,
         autor
@@ -586,17 +631,32 @@ app.delete('/postagemTi/deletarpostagem/:id', async (req, res) => {
 
 })
 //Buscando postagem da PCTS por ID
-app.get("/postagemti/noticiati/:id", async (req, res) => {
+app.get("/postagemti/noticiatia/:id", async (req, res) => {
 
     const id = req.params.id
 
     //check user exist
-    const postagempcts = await PostagemTi.findById(id)
+    const postagem = await PostagemTi.findById(id)
 
-    if (!postagemtelemetria) {
-        return res.status(422).json({ Description_Err: 'Postagem do TI não encontrada' })
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Postagem iberia não encontrada' })
     }
-    return res.status(200).json({ postagempcts })
+    const postagemti = await PostagemTi.findById({ _id: Object(id) }).then(data => {
+        return (
+            {
+                success: true,
+                titulo: data.titulo,
+                conteudo: data.conteudo,
+                autor: data.autor
+            }
+        )
+    }).catch(err=>{
+        return({
+            success:false,
+            data:err
+        })
+    });
+    return res.status(200).send(postagemti)
 
 })
 //---------------------------------------------------END POSTAGEM TI-------------------------------------------
@@ -604,7 +664,7 @@ app.get("/postagemti/noticiati/:id", async (req, res) => {
 //rota begin
 app.get("/postagemrh", async (req, res) => {
     const postagemrh = await PostagemRh.find()
-    return res.status(200).json({postagemrh})
+    return res.status(200).json({ postagemrh })
 })
 //CREATE POSTAGEM DA PCTS
 app.post("/postagemrh/novapostagem", checkToken, async (req, res) => {
@@ -714,10 +774,10 @@ app.get("/postagemrh/noticiarh/:id", async (req, res) => {
 //rota begin
 app.get("/postagembalanca", async (req, res) => {
     const postagemBalanca = await PostagemBalanca.find()
-    return res.status(200).json({postagemBalanca})
+    return res.status(200).json( postagemBalanca )
 })
 //CREATE POSTAGEM DA PCTS
-app.post("/postagembalanca/novapostagem", checkToken, async (req, res) => {
+app.post("/postagembalanca/novapostagem", async (req, res) => {
     const { titulo, conteudo, autor } = req.body
     //Validação de campos
     if (!titulo) {
@@ -811,12 +871,27 @@ app.get("/postagembalanca/noticiabalanca/:id", async (req, res) => {
     const id = req.params.id
 
     //check user exist
-    const postagembalanca = await PostagemBalanca.findById(id)
+    const postagem = await PostagemBalanca.findById(id)
 
-    if (!postagembalanca) {
-        return res.status(422).json({ Description_Err: 'Postagem do TI não encontrada' })
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Postagem iberia não encontrada' })
     }
-    return res.status(200).json({ postagembalanca })
+    const postagembalanca = await PostagemBalanca.findById({ _id: Object(id) }).then(data => {
+        return (
+            {
+                success: true,
+                titulo: data.titulo,
+                conteudo: data.conteudo,
+                autor: data.autor
+            }
+        )
+    }).catch(err=>{
+        return({
+            success:false,
+            data:err
+        })
+    });
+    return res.status(200).send(postagembalanca)
 
 })
 //---------------------------------------------------END POSTAGEM BALANCA-------------------------------------------
