@@ -11,6 +11,9 @@ const Funcionario = require('./models/Funcionario')
 const PostagemIberia = require('./models/PostagemIberia');
 const PostagemTelemetria = require('./models/PostagemTelemetria');
 const PostagemPcts = require('./models/PostagemPcts');
+const PostagemTi = require('./models/PostagemTi');
+const PostagemRh = require('./models/PostagemRh');
+const PostagemBalanca = require('./models/PostagemBalanca');
 
 //CONFIG JSON response
 app.use(express.json())
@@ -383,7 +386,7 @@ app.get("/postagempcts", async (req, res) => {
     const postagemPcts = await PostagemPcts.find()
     return res.status(200).json({postagemPcts})
 })
-//CREATE POSTAGEM DA TELEMETRIA
+//CREATE POSTAGEM DA PCTS
 app.post("/postagempcts/novapostagem", checkToken, async (req, res) => {
     const { titulo, conteudo, autor } = req.body
     //Validação de campos
@@ -420,7 +423,7 @@ app.post("/postagempcts/novapostagem", checkToken, async (req, res) => {
     }
 
 })
-//UPDATE POSTAGEM DA TELEMETRIA
+//UPDATE POSTAGEM DA PCTS
 app.put('/postagempcts/pcts/:id', async (req, res) => {
     const id = req.params.id
     const { titulo, conteudo, autor } = req.body
@@ -454,7 +457,7 @@ app.put('/postagempcts/pcts/:id', async (req, res) => {
         return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
     }
 })
-//DELETE POSTAGEM DA TELEMETRIA
+//DELETE POSTAGEM DA PCTS
 app.delete('/postagempcts/deletarpostagem/:id', async (req, res) => {
 
     const id = req.params.id
@@ -472,7 +475,7 @@ app.delete('/postagempcts/deletarpostagem/:id', async (req, res) => {
     }
 
 })
-//Buscando postagem da TELEMETRIA por ID
+//Buscando postagem da PCTS por ID
 app.get("/postagempcts/noticiapcts/:id", async (req, res) => {
 
     const id = req.params.id
@@ -487,6 +490,336 @@ app.get("/postagempcts/noticiapcts/:id", async (req, res) => {
 
 })
 //---------------------------------------------------END POSTAGEM PCTS-------------------------------------------
+//--------------------------------------FUNCTIONS END ROUTES FOR POSTAGEM TI----------------------------------------
+//rota begin
+app.get("/postagemti", async (req, res) => {
+    const PostagemTi = await PostagemTi.find()
+    return res.status(200).json({PostagemTi})
+})
+//CREATE POSTAGEM DA PCTS
+app.post("/postagemti/novapostagem", checkToken, async (req, res) => {
+    const { titulo, conteudo, autor } = req.body
+    //Validação de campos
+    if (!titulo) {
+        return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+    }
+
+    if (!conteudo) {
+        return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+    }
+
+    if (!autor) {
+        return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+    }
+
+    //Validação se postagem já é existente
+    const postagemExist = await PostagemTi.findOne({ titulo: titulo })
+    if (postagemExist) {
+        return res.status(422).json({ Description_Err: 'Esta postagem ja existe...' })
+    }
+
+    const postagemTi = new PostagemTi({
+        titulo,
+        conteudo,
+        autor
+    })
+
+    try {
+        await postagemTi.save()
+        return res.status(200).json({ msg: "Postagem do TI realizada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//UPDATE POSTAGEM DA PCTS
+app.put('/postagemti/ti/:id', async (req, res) => {
+    const id = req.params.id
+    const { titulo, conteudo, autor } = req.body
+    const postagemti = {
+        titulo,
+        conteudo,
+        autor
+    }
+    try {
+        if (!titulo) {
+            return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+        }
+
+        if (!conteudo) {
+            return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+        }
+
+        if (!autor) {
+            return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+        }
+
+        const updatePostagem = await PostagemTi.updateOne({ _id: id }, postagemTi)
+        if (updatePostagem.matchedCount === 0) {
+            return res.status(422).json({ Description_Err: 'ops algo deu errado!!' })
+        }
+
+        res.status(200).json(postagemTi)
+
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+})
+//DELETE POSTAGEM DA PCTS
+app.delete('/postagemTi/deletarpostagem/:id', async (req, res) => {
+
+    const id = req.params.id
+    const postagem = await PostagemTi.findOne({ _id: id })
+
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Ops parece que esta postagem não existe!!' })
+    }
+    try {
+        await PostagemTi.deleteOne({ _id: id })
+        res.status(200).json({ Description_done: "Postagem Deletada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//Buscando postagem da PCTS por ID
+app.get("/postagemti/noticiati/:id", async (req, res) => {
+
+    const id = req.params.id
+
+    //check user exist
+    const postagempcts = await PostagemTi.findById(id)
+
+    if (!postagemtelemetria) {
+        return res.status(422).json({ Description_Err: 'Postagem do TI não encontrada' })
+    }
+    return res.status(200).json({ postagempcts })
+
+})
+//---------------------------------------------------END POSTAGEM TI-------------------------------------------
+//--------------------------------------FUNCTIONS END ROUTES FOR POSTAGEM RH----------------------------------------
+//rota begin
+app.get("/postagemrh", async (req, res) => {
+    const postagemrh = await PostagemRh.find()
+    return res.status(200).json({postagemrh})
+})
+//CREATE POSTAGEM DA PCTS
+app.post("/postagemrh/novapostagem", checkToken, async (req, res) => {
+    const { titulo, conteudo, autor } = req.body
+    //Validação de campos
+    if (!titulo) {
+        return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+    }
+
+    if (!conteudo) {
+        return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+    }
+
+    if (!autor) {
+        return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+    }
+
+    //Validação se postagem já é existente
+    const postagemExist = await PostagemRh.findOne({ titulo: titulo })
+    if (postagemExist) {
+        return res.status(422).json({ Description_Err: 'Esta postagem ja existe...' })
+    }
+
+    const postagemrh = new PostagemRh({
+        titulo,
+        conteudo,
+        autor
+    })
+
+    try {
+        await postagemrh.save()
+        return res.status(200).json({ msg: "Postagem do RH realizada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//UPDATE POSTAGEM DA PCTS
+app.put('/postagemrh/rh/:id', async (req, res) => {
+    const id = req.params.id
+    const { titulo, conteudo, autor } = req.body
+    const postagemrh = {
+        titulo,
+        conteudo,
+        autor
+    }
+    try {
+        if (!titulo) {
+            return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+        }
+
+        if (!conteudo) {
+            return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+        }
+
+        if (!autor) {
+            return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+        }
+
+        const updatePostagem = await PostagemRh.updateOne({ _id: id }, postagemrh)
+        if (updatePostagem.matchedCount === 0) {
+            return res.status(422).json({ Description_Err: 'ops algo deu errado!!' })
+        }
+
+        res.status(200).json(postagemrh)
+
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+})
+//DELETE POSTAGEM DA PCTS
+app.delete('/postagemrh/deletarpostagem/:id', async (req, res) => {
+
+    const id = req.params.id
+    const postagem = await PostagemRh.findOne({ _id: id })
+
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Ops parece que esta postagem não existe!!' })
+    }
+    try {
+        await PostagemRh.deleteOne({ _id: id })
+        res.status(200).json({ Description_done: "Postagem Deletada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//Buscando postagem da PCTS por ID
+app.get("/postagemrh/noticiarh/:id", async (req, res) => {
+
+    const id = req.params.id
+
+    //check user exist
+    const postagemrh = await PostagemRh.findById(id)
+
+    if (!postagemrh) {
+        return res.status(422).json({ Description_Err: 'Postagem do TI não encontrada' })
+    }
+    return res.status(200).json({ postagemrh })
+
+})
+//---------------------------------------------------END POSTAGEM RH-------------------------------------------
+//--------------------------------------FUNCTIONS END ROUTES FOR POSTAGEM BALANCA----------------------------------------
+//rota begin
+app.get("/postagembalanca", async (req, res) => {
+    const postagemBalanca = await PostagemBalanca.find()
+    return res.status(200).json({postagemBalanca})
+})
+//CREATE POSTAGEM DA PCTS
+app.post("/postagembalanca/novapostagem", checkToken, async (req, res) => {
+    const { titulo, conteudo, autor } = req.body
+    //Validação de campos
+    if (!titulo) {
+        return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+    }
+
+    if (!conteudo) {
+        return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+    }
+
+    if (!autor) {
+        return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+    }
+
+    //Validação se postagem já é existente
+    const postagemExist = await PostagemBalanca.findOne({ titulo: titulo })
+    if (postagemExist) {
+        return res.status(422).json({ Description_Err: 'Esta postagem ja existe...' })
+    }
+
+    const postagembalanca = new PostagemBalanca({
+        titulo,
+        conteudo,
+        autor
+    })
+
+    try {
+        await postagembalanca.save()
+        return res.status(200).json({ msg: "Postagem do RH realizada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//UPDATE POSTAGEM DA PCTS
+app.put('/postagembalanca/balanca/:id', async (req, res) => {
+    const id = req.params.id
+    const { titulo, conteudo, autor } = req.body
+    const postagembalanca = {
+        titulo,
+        conteudo,
+        autor
+    }
+    try {
+        if (!titulo) {
+            return res.status(422).json({ Description_Err: 'Titulo é obrigatorio' })
+        }
+
+        if (!conteudo) {
+            return res.status(422).json({ Description_Err: 'Conteudo é obrigatorio' })
+        }
+
+        if (!autor) {
+            return res.status(422).json({ Description_Err: 'Autor é obrigatorio' })
+        }
+
+        const updatePostagem = await PostagemBalanca.updateOne({ _id: id }, postagembalanca)
+        if (updatePostagem.matchedCount === 0) {
+            return res.status(422).json({ Description_Err: 'ops algo deu errado!!' })
+        }
+
+        res.status(200).json(postagembalanca)
+
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+})
+//DELETE POSTAGEM DA PCTS
+app.delete('/postagembalanca/deletarpostagem/:id', async (req, res) => {
+
+    const id = req.params.id
+    const postagem = await PostagemBalanca.findOne({ _id: id })
+
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Ops parece que esta postagem não existe!!' })
+    }
+    try {
+        await PostagemBalanca.deleteOne({ _id: id })
+        res.status(200).json({ Description_done: "Postagem Deletada com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
+//Buscando postagem da PCTS por ID
+app.get("/postagembalanca/noticiabalanca/:id", async (req, res) => {
+
+    const id = req.params.id
+
+    //check user exist
+    const postagembalanca = await PostagemBalanca.findById(id)
+
+    if (!postagembalanca) {
+        return res.status(422).json({ Description_Err: 'Postagem do TI não encontrada' })
+    }
+    return res.status(200).json({ postagembalanca })
+
+})
+//---------------------------------------------------END POSTAGEM BALANCA-------------------------------------------
 //CREDENTIAL MONGO
 const dbUser = process.env.DB_USER
 const dbPassword = process.env.DB_PASS
