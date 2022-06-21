@@ -31,8 +31,9 @@ app.use(function (req, res, next) {
 //FUNCTIONS END ROUTES FOR FUNCIONARIOS
 //public rout
 
-app.get('/', (req, res) => {
-    return res.status(200).json({ msg: "Ola,mundo" })
+app.get("/funcionarios", async (req, res) => {
+    const funcionarios = await Funcionario.find();
+    return res.status(200).json(funcionarios)
 })
 
 //privite route
@@ -154,7 +155,23 @@ app.post("/auth/login", async (req, res) => {
     }
 
 })
+app.delete('/funcionario/deletarfuncionario/:id', async (req, res) => {
 
+    const id = req.params.id
+    const funcionario = await Funcionario.findOne({ _id: id })
+
+    if (!funcionario) {
+        return res.status(422).json({ Description_Err: 'Ops parece que este funcionario não existe!!' })
+    }
+    try {
+        await Funcionario.deleteOne({ _id: id })
+        res.status(200).json({ Description_done: "Funcionario Deletado com sucesso!!" })
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
+    }
+
+})
 //---------------------------------------------------END FUNCIONARIOS-------------------------------------------
 //-------------------------------------FUNCTIONS END ROUTES FOR POSTAGEMIBERIA----------------------------------
 //rota begin
@@ -273,10 +290,10 @@ app.get("/postagemiberia/noticiaiberia/:id", async (req, res) => {
                 autor: data.autor
             }
         )
-    }).catch(err=>{
-        return({
-            success:false,
-            data:err
+    }).catch(err => {
+        return ({
+            success: false,
+            data: err
         })
     });
     return res.status(200).send(postagemiberia)
@@ -399,10 +416,10 @@ app.get("/postagemtelemetria/noticiatelemetria/:id", async (req, res) => {
                 autor: data.autor
             }
         )
-    }).catch(err=>{
-        return({
-            success:false,
-            data:err
+    }).catch(err => {
+        return ({
+            success: false,
+            data: err
         })
     });
     return res.status(200).send(postagemtelemetria)
@@ -524,10 +541,10 @@ app.get("/postagempcts/noticiapcts/:id", async (req, res) => {
                 autor: data.autor
             }
         )
-    }).catch(err=>{
-        return({
-            success:false,
-            data:err
+    }).catch(err => {
+        return ({
+            success: false,
+            data: err
         })
     });
     return res.status(200).send(postagempcts)
@@ -539,7 +556,7 @@ app.get("/postagempcts/noticiapcts/:id", async (req, res) => {
 //rota begin
 app.get("/postagemti", async (req, res) => {
     const postagemTi = await PostagemTi.find()
-    return res.status(200).json( postagemTi )
+    return res.status(200).json(postagemTi)
 })
 //CREATE POSTAGEM DA PCTS
 app.post("/postagemti/novapostagem", async (req, res) => {
@@ -650,10 +667,10 @@ app.get("/postagemti/noticiatia/:id", async (req, res) => {
                 autor: data.autor
             }
         )
-    }).catch(err=>{
-        return({
-            success:false,
-            data:err
+    }).catch(err => {
+        return ({
+            success: false,
+            data: err
         })
     });
     return res.status(200).send(postagemti)
@@ -664,10 +681,10 @@ app.get("/postagemti/noticiatia/:id", async (req, res) => {
 //rota begin
 app.get("/postagemrh", async (req, res) => {
     const postagemrh = await PostagemRh.find()
-    return res.status(200).json({ postagemrh })
+    return res.status(200).json(postagemrh)
 })
 //CREATE POSTAGEM DA PCTS
-app.post("/postagemrh/novapostagem", checkToken, async (req, res) => {
+app.post("/postagemrh/novapostagem", async (req, res) => {
     const { titulo, conteudo, autor } = req.body
     //Validação de campos
     if (!titulo) {
@@ -737,7 +754,7 @@ app.put('/postagemrh/rh/:id', async (req, res) => {
         return res.status(400).json({ Description_Err: "Ocorreu um erro com o servidor, tente novamente mais tarde" })
     }
 })
-//DELETE POSTAGEM DA PCTS
+//DELETE POSTAGEM DO RH
 app.delete('/postagemrh/deletarpostagem/:id', async (req, res) => {
 
     const id = req.params.id
@@ -755,18 +772,33 @@ app.delete('/postagemrh/deletarpostagem/:id', async (req, res) => {
     }
 
 })
-//Buscando postagem da PCTS por ID
+//Buscando postagem do RH por ID
 app.get("/postagemrh/noticiarh/:id", async (req, res) => {
 
     const id = req.params.id
 
     //check user exist
-    const postagemrh = await PostagemRh.findById(id)
+    const postagem = await PostagemRh.findById(id)
 
-    if (!postagemrh) {
-        return res.status(422).json({ Description_Err: 'Postagem do TI não encontrada' })
+    if (!postagem) {
+        return res.status(422).json({ Description_Err: 'Postagem iberia não encontrada' })
     }
-    return res.status(200).json({ postagemrh })
+    const postagemrh = await PostagemRh.findById({ _id: Object(id) }).then(data => {
+        return (
+            {
+                success: true,
+                titulo: data.titulo,
+                conteudo: data.conteudo,
+                autor: data.autor
+            }
+        )
+    }).catch(err => {
+        return ({
+            success: false,
+            data: err
+        })
+    });
+    return res.status(200).send(postagemrh)
 
 })
 //---------------------------------------------------END POSTAGEM RH-------------------------------------------
@@ -774,7 +806,7 @@ app.get("/postagemrh/noticiarh/:id", async (req, res) => {
 //rota begin
 app.get("/postagembalanca", async (req, res) => {
     const postagemBalanca = await PostagemBalanca.find()
-    return res.status(200).json( postagemBalanca )
+    return res.status(200).json(postagemBalanca)
 })
 //CREATE POSTAGEM DA PCTS
 app.post("/postagembalanca/novapostagem", async (req, res) => {
@@ -885,16 +917,45 @@ app.get("/postagembalanca/noticiabalanca/:id", async (req, res) => {
                 autor: data.autor
             }
         )
-    }).catch(err=>{
-        return({
-            success:false,
-            data:err
+    }).catch(err => {
+        return ({
+            success: false,
+            data: err
         })
     });
     return res.status(200).send(postagembalanca)
 
 })
 //---------------------------------------------------END POSTAGEM BALANCA-------------------------------------------
+//---------------------------------------------------RELATORIOS-----------------------------------------------------
+app.get('/relatoriopostagens', async (req, res) => {
+    const postagemA = await await PostagemIberia.find()
+    const postagemB = await await PostagemTelemetria.find()
+    const postagemC = await await PostagemBalanca.find()
+    const postagemD = await await PostagemTi.find()
+    const postagemE = await await PostagemPcts.find()
+    const postagemF = await await PostagemRh.find()
+    const totalpostagens = [
+        { Descricao: "Iberia", qtdpostagens: postagemA.length },
+        { Descricao: "Telemetria", qtdpostagens: postagemB.length },
+        { Descricao: "Balanca", qtdpostagens: postagemC.length },
+        { Descricao: "TI", qtdpostagens: postagemD.length },
+        { Descricao: "Qualidade", qtdpostagens: postagemE.length },
+        { Descricao: "Recursos Humanos", qtdpostagens: postagemF.length },
+    ]
+    return res.status(200).json(totalpostagens)
+})
+app.get('/relatorioqtdpostagens', async (req, res) => {
+    const postagemA = await await PostagemIberia.find()
+    const postagemB = await await PostagemTelemetria.find()
+    const postagemC = await await PostagemBalanca.find()
+    const postagemD = await await PostagemTi.find()
+    const postagemE = await await PostagemPcts.find()
+    const postagemF = await await PostagemRh.find()
+    const teste = [{ postagema: postagemA.length, postagemb: postagemB.length, postagemc: postagemC.length, postagemd: postagemD.length, postageme: postagemE.length, postagemf: postagemF.length }]
+    return res.status(200).json(teste)
+})
+//---------------------------------------------------END RELATORIO--------------------------------------------------
 //CREDENTIAL MONGO
 const dbUser = process.env.DB_USER
 const dbPassword = process.env.DB_PASS
